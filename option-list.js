@@ -160,19 +160,13 @@
         const optionSelectedEvent = new CustomEvent('optionSelected', {
           bubbles: true,
           composable: true,
-          detail: {
-            index: indx,
-            value: (elem.getAttribute('value') || elem.innerText)
-          }
+          detail: { index: indx, value: (elem.getAttribute('value') || elem.innerText) }
         });
 
         const optionDeselectedEvent = new CustomEvent('optionDeselected', {
           bubbles: true,
           composable: true,
-          detail: {
-            index: indx,
-            value: (elem.getAttribute('value') || elem.innerText)
-          }
+          detail: { index: indx, value: (elem.getAttribute('value') || elem.innerText) }
         });
 
         if(this._state.maxSelect === 1) {

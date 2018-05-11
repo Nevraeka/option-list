@@ -46,7 +46,13 @@
             }
             render(this);
             Array.from(this.querySelectorAll('option'), (item, indx, arr) => {
-              if (item.getAttribute('selected')) { this._state.selectedIndices.push(indx); }
+              if(this._state.selectedIndices.length <= this._state.maxSelect) {
+                if (item.getAttribute('selected')) {
+                  this._state.selectedIndices.push(indx);
+                } else {
+                  item.removeAttribute('selected');
+                }
+              }
             });
             this._root.querySelector('#slot').addEventListener('slotchange', slotChangeHandler.bind(this));
           }
@@ -139,7 +145,7 @@
           color: #3777bc;
         }
       </style>
-      <div class="option_list ${(elemInstance.getAttribute('caret') || '').replace(' ', '-').toLowerCase()}"> 
+      <div class="option_list ${(!!elemInstance.getAttribute('caret') ? elemInstance.getAttribute('caret') : '').replace(' ', '-').toLowerCase()}"> 
         <slot id="slot"></slot>
       </div>
     `;
@@ -169,18 +175,25 @@
           }
         });
 
-        const index = this._state.selectedIndices.indexOf(indx);
-        if (index === -1) {
-          if (this._state.selectedIndices.length < this._state.maxSelect) {
-            this._state.selectedIndices.push(indx);
-            evnt.target.setAttribute('selected', 'true');
-            this.dispatchEvent(optionSelectedEvent);
-          }
+        if(this._state.maxSelect === 1) {
+          elemNodes.forEach((optEl) => optEl.removeAttribute('selected'));
+          evnt.target.setAttribute('selected', 'true');
+          this._state.selectedIndices = [indx];
+          this.dispatchEvent(optionSelectedEvent);
         } else {
-          evnt.target.removeAttribute('selected');
-          delete this._state.selectedIndices[index];
-          this._state.selectedIndices = this._state.selectedIndices.filter((item) => !!item);
-          this.dispatchEvent(optionDeselectedEvent);
+          const index = this._state.selectedIndices.indexOf(indx);
+          if (index === -1) {
+            if (this._state.selectedIndices.length < this._state.maxSelect) {
+              this._state.selectedIndices.push(indx);
+              evnt.target.setAttribute('selected', 'true');
+              this.dispatchEvent(optionSelectedEvent);
+            }
+          } else {
+            evnt.target.removeAttribute('selected');
+            delete this._state.selectedIndices[index];
+            this._state.selectedIndices = this._state.selectedIndices.filter((item) => !!item);
+            this.dispatchEvent(optionDeselectedEvent);
+          }
         }
       };
       elem.removeEventListener('click', handleClick.bind(this));

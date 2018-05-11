@@ -139,7 +139,7 @@
           color: #3777bc;
         }
       </style>
-      <div class="option_list ${(this.getAttribute('caret') || '').replace(' ', '-').toLowerCase()}"> 
+      <div class="option_list ${(elemInstance.getAttribute('caret') || '').replace(' ', '-').toLowerCase()}"> 
         <slot id="slot"></slot>
       </div>
     `;

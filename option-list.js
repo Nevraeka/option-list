@@ -31,12 +31,12 @@
 
           static get observedAttributes() { return ['caret', 'max-select']; }
 
-          static info() { return Object.freeze({ name: 'option-list', version: 'v0.1.0' }); }
+          get info() { return Object.freeze({ name: 'option-list', version: 'v0.1.0' }); }
 
           constructor() {
             super();
             this._root = null;
-            this._state = { caret: '', maxSelect: 1, selectedIndices: [] };
+            this._state = { maxSelect: 1, selectedIndices: [] };
           }
 
           connectedCallback() {
@@ -46,10 +46,12 @@
             }
             render(this);
             Array.from(this.querySelectorAll('option'), (item, indx, arr) => {
-              if (item.getAttribute('selected')) {
-                this._state.selectedIndices.push(indx);
-              }
-            });
+              if (item.getAttribute('selected')) { this._state.selectedIndices.push(indx); }
+            });            this._root.querySelector('#slot').addEventListener('slotchange', slotChangeHandler.bind(this));
+          }
+
+          disconnectedCallback(){
+            this._root.querySelector('#slot').removeEventListener('slotchange', slotChangeHandler.bind(this));
           }
 
           attributeChangedCallback(name, oldValue, newValue) {
@@ -58,10 +60,11 @@
               const parsedVal = parseInt(newValue, 10);
               this._state.maxSelect = !!parsedVal ? parsedVal : 1;
             }
-            if (name === 'caret') { this._state.caret = newValue.replace(' ', '-').toLowerCase(); }
-          }
-
-
+            if (name === 'caret') {
+              if(this._root !== null) {
+                this._root.querySelector('.option__list').className = `option__list ${newValue.replace(' ', '-').toLowerCase()}`; }
+              }          
+            }
         });
     }
   }
@@ -135,55 +138,53 @@
           color: #3777bc;
         }
       </style>
-      <div class="option_list ${elemInstance._state.caret}"> 
+      <div class="option_list"> 
         <slot id="slot"></slot>
       </div>
     `;
-
-    const slotChangeHandler = (evt) => {
-      const nodes = evt.target.assignedNodes();
-      const elemNodes = Array.from(nodes).filter((nd) => nd.nodeType === 1 && nd.tagName === 'OPTION');
-
-      elemNodes.forEach((elem, indx) => {
-        const handleClick = (evnt) => {
-          const optionSelectedEvent = new CustomEvent('optionSelected', {
-            bubbles: true,
-            composable: true,
-            detail: {
-              index: indx,
-              value: (elem.getAttribute('value') || elem.innerText)
-            }
-          });
-
-          const optionDeselectedEvent = new CustomEvent('optionDeselected', {
-            bubbles: true,
-            composable: true,
-            detail: {
-              index: indx,
-              value: (elem.getAttribute('value') || elem.innerText)
-            }
-          });
-
-          const index = elemInstance._state.selectedIndices.indexOf(indx);
-          if (index === -1) {
-            if (elemInstance._state.selectedIndices.length < elemInstance._state.maxSelect) {
-              elemInstance._state.selectedIndices.push(indx);
-              evnt.target.setAttribute('selected', 'true');
-              elemInstance.dispatchEvent(optionSelectedEvent);
-            }
-          } else {
-            evnt.target.removeAttribute('selected');
-            delete elemInstance._state.selectedIndices[index];
-            elemInstance._state.selectedIndices = elemInstance._state.selectedIndices.filter((item) => !!item);
-            elemInstance.dispatchEvent(optionDeselectedEvent);
-          }
-        };
-        elem.removeEventListener('click', handleClick.bind(elemInstance));
-        elem.addEventListener('click', handleClick.bind(elemInstance));
-      }, elemInstance);
-    };
-    elemInstance._root.querySelector('#slot').removeEventListener('slotchange', slotChangeHandler.bind(elemInstance));
-    elemInstance._root.querySelector('#slot').addEventListener('slotchange', slotChangeHandler.bind(elemInstance));
   }
+
+  function slotChangeHandler(evt) {
+    const nodes = evt.target.assignedNodes();
+    const elemNodes = Array.from(nodes).filter((nd) => nd.nodeType === 1 && nd.tagName === 'OPTION');
+
+    elemNodes.forEach((elem, indx) => {
+      const handleClick = (evnt) => {
+        const optionSelectedEvent = new CustomEvent('optionSelected', {
+          bubbles: true,
+          composable: true,
+          detail: {
+            index: indx,
+            value: (elem.getAttribute('value') || elem.innerText)
+          }
+        });
+
+        const optionDeselectedEvent = new CustomEvent('optionDeselected', {
+          bubbles: true,
+          composable: true,
+          detail: {
+            index: indx,
+            value: (elem.getAttribute('value') || elem.innerText)
+          }
+        });
+
+        const index = this._state.selectedIndices.indexOf(indx);
+        if (index === -1) {
+          if (this._state.selectedIndices.length < this._state.maxSelect) {
+            this._state.selectedIndices.push(indx);
+            evnt.target.setAttribute('selected', 'true');
+            this.dispatchEvent(optionSelectedEvent);
+          }
+        } else {
+          evnt.target.removeAttribute('selected');
+          delete this._state.selectedIndices[index];
+          this._state.selectedIndices = this._state.selectedIndices.filter((item) => !!item);
+          this.dispatchEvent(optionDeselectedEvent);
+        }
+      };
+      elem.removeEventListener('click', handleClick.bind(this));
+      elem.addEventListener('click', handleClick.bind(this));
+    }, this);
+  };
 
 })(document, window);

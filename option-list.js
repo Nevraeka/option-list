@@ -31,7 +31,7 @@
 
           static get observedAttributes() { return ['caret', 'max-select']; }
 
-          get info() { return Object.freeze({ name: 'option-list', version: 'v0.1.0' }); }
+          get info() { return Object.freeze({ dependencies: [], name: 'option-list', version: 'v0.2.0' }); }
 
           constructor() {
             super();
@@ -63,7 +63,7 @@
             }
             if (name === 'caret') {
               if(this._root !== null) {
-                this._root.querySelector('.option_list').setAttribute('class', `option_list ${newValue.replace(' ', '-').toLowerCase()}`); }
+                this._root.querySelector('.option_list').className = `option_list ${newValue.replace(' ', '-').toLowerCase()}`; }
               }          
             }
         });
@@ -139,7 +139,7 @@
           color: #3777bc;
         }
       </style>
-      <div class="option_list ${(this.getAttribute('caret') ||'').replace(' ', '-').toLowerCase()}"> 
+      <div class="option_list ${(this.getAttribute('caret') || '').replace(' ', '-').toLowerCase()}"> 
         <slot id="slot"></slot>
       </div>
     `;

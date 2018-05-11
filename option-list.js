@@ -47,7 +47,8 @@
             render(this);
             Array.from(this.querySelectorAll('option'), (item, indx, arr) => {
               if (item.getAttribute('selected')) { this._state.selectedIndices.push(indx); }
-            });            this._root.querySelector('#slot').addEventListener('slotchange', slotChangeHandler.bind(this));
+            });
+            this._root.querySelector('#slot').addEventListener('slotchange', slotChangeHandler.bind(this));
           }
 
           disconnectedCallback(){
@@ -62,7 +63,7 @@
             }
             if (name === 'caret') {
               if(this._root !== null) {
-                this._root.querySelector('.option__list').className = `option__list ${newValue.replace(' ', '-').toLowerCase()}`; }
+                this._root.querySelector('.option_list').setAttribute('class', `option_list ${newValue.replace(' ', '-').toLowerCase()}`); }
               }          
             }
         });

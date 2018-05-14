@@ -90,8 +90,6 @@
           overflow: visible;
           cursor: pointer;
           font-weight: 300;
-          width: 100%;
-          max-width: 600px;
         }
 
         ::slotted(option) {
@@ -100,6 +98,7 @@
           -ms-user-select: none;
           user-select: none;
           display: flex;
+          box-sizing: border-box;
           align-items: center;
           padding: 8px 16px;
           background-color: #fff;
@@ -113,7 +112,6 @@
           border-radius: 4px;
           border: 1px solid #e0e0e0;
           width: 100%;
-          max-width: 600px;
           position: relative;
           top: 7px;
         }

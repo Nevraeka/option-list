@@ -19,7 +19,6 @@
     } else {
       script.onload = function () { callback() };
     }
-
     script.src = url;
     document.getElementsByTagName("head")[0].appendChild(script);
   }
@@ -29,7 +28,7 @@
       window.customElements.define('option-list',
         class OptionList extends HTMLElement {
 
-          static get observedAttributes() { return ['caret', 'max-select']; }
+          static get observedAttributes() { return ['class', 'style', 'caret', 'max-select']; }
 
           get info() { return Object.freeze({ dependencies: [], name: 'option-list', version: 'v0.2.0' }); }
 

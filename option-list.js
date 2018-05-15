@@ -44,6 +44,7 @@
               else { this._root = this; }
             }
             render(this);
+            if (window.ShadyCSS) { ShadyCSS.styleElement(this); }
             Array.from(this.querySelectorAll('option'), (item, indx, arr) => {
               if(this._state.selectedIndices.length <= this._state.maxSelect) {
                 if (item.getAttribute('selected')) {
@@ -91,9 +92,9 @@
           cursor: pointer;
           font-weight: 300;
         }
-
-        ::slotted(option),
-        option-list option {
+    
+        .option_list option,
+        ::slotted(option) {
           -webkit-user-select: none;
           -moz-user-select: none;
           -ms-user-select: none;
@@ -134,12 +135,12 @@
           border-bottom-color: #fff;
           position: absolute;
         }
-        option-list option:hover,
+        .option_list option:hover,
         ::slotted(option:hover) {
           background: #eee;
         }
-        option-list option[selected],
-        option-list option[selected]:hover,
+        .option_list option[selected],
+        .option_list option[selected]:hover,
         ::slotted(option[selected]),
         ::slotted(option[selected]:hover) {
           color: #3777bc;

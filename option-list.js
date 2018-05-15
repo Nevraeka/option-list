@@ -78,7 +78,8 @@
   function render(elemInstance) {
     elemInstance._root.innerHTML = `
       <style>
-        :host {
+        :host,
+        option-list {
           display: block;
           box-sizing: border-box;
           margin: 0;
@@ -91,7 +92,8 @@
           font-weight: 300;
         }
 
-        ::slotted(option) {
+        ::slotted(option),
+        option-list option {
           -webkit-user-select: none;
           -moz-user-select: none;
           -ms-user-select: none;
@@ -132,11 +134,12 @@
           border-bottom-color: #fff;
           position: absolute;
         }
-
+        option-list option:hover,
         ::slotted(option:hover) {
           background: #eee;
         }
-
+        option-list option[selected],
+        option-list option[selected]:hover,
         ::slotted(option[selected]),
         ::slotted(option[selected]:hover) {
           color: #3777bc;

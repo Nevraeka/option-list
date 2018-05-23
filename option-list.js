@@ -30,36 +30,48 @@
 
           static get observedAttributes() { return ['class', 'style', 'caret', 'max-select']; }
 
-          get info() { return Object.freeze({ dependencies: [], name: 'option-list', version: 'v0.2.0' }); }
+          get info() { 
+            return Object.freeze({
+              dependencies: [],
+              name: 'option-list',
+              version: 'v1.0.0'
+            });
+          }
 
           constructor() {
             super();
-            this._root = null;
-            this._state = { maxSelect: 1, selectedIndices: [] };
+            this._state = {
+              childList: [],
+              maxSelect: 1,
+              selectedIndices: []
+            };
           }
 
           connectedCallback() {
-            if (this._root === null) {
-              if (!!this.attachShadow) { this._root = this.attachShadow({ mode: "open" }); }
-              else { this._root = this; }
-            }
             render(this);
-            if (window.ShadyCSS) { ShadyCSS.styleElement(this); }
-            Array.from(this.querySelectorAll('option'), (item, indx, arr) => {
-              if(this._state.selectedIndices.length <= this._state.maxSelect) {
-                if (item.getAttribute('selected')) {
-                  this._state.selectedIndices.push(indx);
-                } else {
-                  item.removeAttribute('selected');
-                }
-              }
-            });
-            this._root.querySelector('#slot').addEventListener('slotchange', slotChangeHandler.bind(this));
+            
+            this.observer = new MutationObserver(function(mutations) {
+      console.log('dfsdfsdf');
+      mutations.forEach(function(mutation) {
+        this._state.childList = Array.from(this.children).filter((item)=> item.nodeType === 1 && item.tagName === 'OPTION')
+        ;
+        childrenUpdated(this);            
+      }, this);
+    }, this);
+    this.observer.observe(this, { attributes: true, childList: true, characterData: true });
+  
+            // Array.from(this.querySelectorAll('option'), (item, indx, arr) => {
+            //   if(this._state.selectedIndices.length <= this._state.maxSelect) {
+            //     if (item.getAttribute('selected')) {
+            //       this._state.selectedIndices.push(indx);
+            //     } else {
+            //       item.removeAttribute('selected');
+            //     }
+            //   }
+            // });
           }
 
-          disconnectedCallback(){
-            this._root.querySelector('#slot').removeEventListener('slotchange', slotChangeHandler.bind(this));
-          }
+          disconnectedCallback(){ this.observer.disconnect(); }
 
           attributeChangedCallback(name, oldValue, newValue) {
             if (newValue === oldValue) { return };
@@ -68,8 +80,8 @@
               this._state.maxSelect = !!parsedVal ? parsedVal : 1;
             }
             if (name === 'caret') {
-              if(this._root !== null) {
-                this._root.querySelector('.option_list').className = `option_list ${newValue.replace(' ', '-').toLowerCase()}`; }
+              if(!!this.querySelector('.option_list')) {
+                this.querySelector('.option_list').className = `option_list ${newValue.replace(' ', '-').toLowerCase()}`; }
               }          
             }
         });
@@ -77,86 +89,87 @@
   }
 
   function render(elemInstance) {
-    elemInstance._root.innerHTML = `
-      <style>
-        :host,
-        option-list {
-          display: block;
-          box-sizing: border-box;
-          margin: 0;
-          padding: 0;
-          font-family: 'Roboto', Helvetica, Arial, sans-serif;
-          position: relative;
-          font-size: 14px;
-          overflow: visible;
-          cursor: pointer;
-          font-weight: 300;
-        }
-    
-        .option_list option,
-        ::slotted(option) {
-          -webkit-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-          user-select: none;
-          display: flex;
-          box-sizing: border-box;
-          align-items: center;
-          padding: 8px 16px;
-          background-color: #fff;
-          transition: background-color .2s
-        }
+    elemInstance._state.childList = Array.from(elemInstance.children).filter((item)=> item.nodeType === 1 && item.tagName === 'OPTION');
+    const innerWrapper = document.createElement('div');
+    const css = document.createElement('style');
+    css.appendChild(document.createTextNode(""));
+    css.innerHTML = `
+      option-list {
+        display: block;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Roboto', Helvetica, Arial, sans-serif;
+        position: relative;
+        font-size: 14px;
+        overflow: visible;
+        cursor: pointer;
+        font-weight: 300;
+      }
 
-        .option_list {
-          overflow: visible;
-          box-sizing: border-box;
-          box-shadow: 0 2px 4px 0 rgba(0,0,0,.2);
-          border-radius: 4px;
-          border: 1px solid #e0e0e0;
-          width: 100%;
-          position: relative;
-          top: 7px;
-        }
+      .option-list {
+        overflow: visible;
+        box-sizing: border-box;
+        box-shadow: 0 2px 4px 0 rgba(0,0,0,.2);
+        border-radius: 4px;
+        border: 1px solid #e0e0e0;
+        width: 100%;
+        position: relative;
+        top: 7px;
+      }
 
-        .top-left:before {
-          content: "";
-          border: 7px solid transparent;
-          border-bottom-color: #e0e0e0;
-          position: absolute;
-          left: 25px;
-          top: -14px;
-        }
+      .top-left:before {
+        content: "";
+        border: 7px solid transparent;
+        border-bottom-color: #e0e0e0;
+        position: absolute;
+        left: 25px;
+        top: -14px;
+      }
 
-        .top-left:after {
-          left: 26px;
-          top: -12px;
-          content: "";
-          border: 6px solid transparent;
-          border-bottom-color: #fff;
-          position: absolute;
-        }
-        .option_list option:hover,
-        ::slotted(option:hover) {
-          background: #eee;
-        }
-        .option_list option[selected],
-        .option_list option[selected]:hover,
-        ::slotted(option[selected]),
-        ::slotted(option[selected]:hover) {
-          color: #3777bc;
-        }
-      </style>
-      <div class="option_list ${(!!elemInstance.getAttribute('caret') ? elemInstance.getAttribute('caret') : '').replace(' ', '-').toLowerCase()}"> 
-        <slot id="slot"></slot>
-      </div>
+      .top-left:after {
+        left: 26px;
+        top: -12px;
+        content: "";
+        border: 6px solid transparent;
+        border-bottom-color: #fff;
+        position: absolute;
+      }
+
+      option {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        display: flex;
+        box-sizing: border-box;
+        align-items: center;
+        padding: 8px 16px;
+        background-color: #fff;
+        transition: background-color .2s
+      }
+
+      option:hover {
+        background: #eee;
+      }
+
+      option[selected],
+      option[selected]:hover {
+        color: #3777bc;
+      }
     `;
+    innerWrapper.className = `option-list ${(!!elemInstance.getAttribute('caret') ?  elemInstance.getAttribute('caret') : '').replace(' ', '-').toLowerCase()}`; 
+    elemInstance.innerHTML = '';
+    elemInstance.appendChild(css);
+    elemInstance.appendChild(innerWrapper);
+    childrenUpdated(elemInstance);
+    console.log(elemInstance.innerHTML)
   }
 
-  function slotChangeHandler(evt) {
-    const nodes = evt.target.assignedNodes();
-    const elemNodes = Array.from(nodes).filter((nd) => nd.nodeType === 1 && nd.tagName === 'OPTION');
-
-    elemNodes.forEach((elem, indx) => {
+  function childrenUpdated(component) {
+    component._state.childList.forEach((opt)=> component.querySelector('.option-list').appendChild(opt) );
+    const optionElements = Array.from(component.querySelectorAll('option'));
+    optionElements.forEach((elem, indx) => {
       const handleClick = (evnt) => {
         const optionSelectedEvent = new CustomEvent('optionSelected', {
           bubbles: true,
@@ -170,30 +183,30 @@
           detail: { index: indx, value: (elem.getAttribute('value') || elem.innerHTML) }
         });
 
-        if(this._state.maxSelect === 1) {
-          elemNodes.forEach((optEl) => optEl.removeAttribute('selected'));
+        if(component._state.maxSelect === 1) {
+          optionElements.forEach((optEl) => optEl.removeAttribute('selected'));
           evnt.target.setAttribute('selected', 'true');
-          this._state.selectedIndices = [indx];
-          this.dispatchEvent(optionSelectedEvent);
+          component._state.selectedIndices = [indx];
+          component.dispatchEvent(optionSelectedEvent);
         } else {
-          const index = this._state.selectedIndices.indexOf(indx);
+          const index = component._state.selectedIndices.indexOf(indx);
           if (index === -1) {
-            if (this._state.selectedIndices.length < this._state.maxSelect) {
-              this._state.selectedIndices.push(indx);
+            if (component._state.selectedIndices.length < component._state.maxSelect) {
+              component._state.selectedIndices.push(indx);
               evnt.target.setAttribute('selected', 'true');
-              this.dispatchEvent(optionSelectedEvent);
+              component.dispatchEvent(optionSelectedEvent);
             }
           } else {
             evnt.target.removeAttribute('selected');
-            delete this._state.selectedIndices[index];
-            this._state.selectedIndices = this._state.selectedIndices.filter((item) => !!item);
-            this.dispatchEvent(optionDeselectedEvent);
+            delete component._state.selectedIndices[index];
+            component._state.selectedIndices = component._state.selectedIndices.filter((item) => !!item);
+            component.dispatchEvent(optionDeselectedEvent);
           }
         }
       };
-      elem.removeEventListener('click', handleClick.bind(this));
-      elem.addEventListener('click', handleClick.bind(this));
-    }, this);
+      elem.removeEventListener('click', handleClick.bind(component));
+      elem.addEventListener('click', handleClick.bind(component));
+    }, component);
   };
 
 })(document, window);

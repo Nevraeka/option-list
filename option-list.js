@@ -30,7 +30,7 @@
 
           static get observedAttributes() { return ['class', 'style', 'caret', 'max-select']; }
 
-          get info() { return Object.freeze({ dependencies: [], name: 'option-list', version: 'v0.2.0' }); }
+          get info() { return Object.freeze({ dependencies: [], name: 'option-list', version: 'v1.1.0' }); }
 
           constructor() {
             super();
@@ -44,8 +44,8 @@
               else { this._root = this; }
             }
             render(this);
-            if (window.ShadyCSS) { ShadyCSS.styleElement(this); }
-            Array.from(this.querySelectorAll('option'), (item, indx, arr) => {
+
+            Array.from(this.children, (item, indx, arr) => {
               if(this._state.selectedIndices.length <= this._state.maxSelect) {
                 if (item.getAttribute('selected')) {
                   this._state.selectedIndices.push(indx);
@@ -92,9 +92,13 @@
           cursor: pointer;
           font-weight: 300;
         }
-    
-        .option_list option,
-        ::slotted(option) {
+
+        .option_list:last-child {
+          margin: 0 0 0 auto;
+        }
+
+        ::slotted(div),
+        option-list > div {
           -webkit-user-select: none;
           -moz-user-select: none;
           -ms-user-select: none;
@@ -135,14 +139,15 @@
           border-bottom-color: #fff;
           position: absolute;
         }
-        .option_list option:hover,
-        ::slotted(option:hover) {
+
+        option-list > div:hover,
+        ::slotted(div:hover) {
           background: #eee;
         }
-        .option_list option[selected],
-        .option_list option[selected]:hover,
-        ::slotted(option[selected]),
-        ::slotted(option[selected]:hover) {
+        option-list option[selected],
+        option-list option[selected]:hover,
+        ::slotted(div[selected]),
+        ::slotted(div[selected]:hover) {
           color: #3777bc;
         }
       </style>
@@ -154,8 +159,7 @@
 
   function slotChangeHandler(evt) {
     const nodes = evt.target.assignedNodes();
-    const elemNodes = Array.from(nodes).filter((nd) => nd.nodeType === 1 && nd.tagName === 'OPTION');
-
+    const elemNodes = Array.from(nodes).filter((nd) => nd.nodeType === 1);
     elemNodes.forEach((elem, indx) => {
       const handleClick = (evnt) => {
         const optionSelectedEvent = new CustomEvent('optionSelected', {

@@ -228,7 +228,7 @@
 
           static get observedAttributes() { return ['class', 'style', 'caret', 'max-select']; }
 
-          get info() { return Object.freeze({ dependencies: [], name: 'option-list', version: 'v0.2.0' }); }
+          get info() { return Object.freeze({ dependencies: [], name: 'option-list', version: 'v1.1.0' }); }
 
           constructor() {
             super();
@@ -242,7 +242,6 @@
               else { this._root = this; }
             }
             render(this);
-            console.log(this.children, this._root.children)
             Array.from(this.children, (item, indx, arr) => {
               if(this._state.selectedIndices.length <= this._state.maxSelect) {
                 if (item.getAttribute('selected')) {

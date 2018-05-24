@@ -93,12 +93,13 @@
           font-weight: 300;
         }
 
-        .option_list:last-child {
+        .option_list:last-child,
+        ::slotted(option:last-of-type) {
           margin: 0 0 0 auto;
         }
 
-        ::slotted(div),
-        option-list > div {
+        ::slotted(option),
+        option-list > option {
           -webkit-user-select: none;
           -moz-user-select: none;
           -ms-user-select: none;
@@ -140,14 +141,14 @@
           position: absolute;
         }
 
-        option-list > div:hover,
-        ::slotted(div:hover) {
+        option-list > option:hover,
+        ::slotted(option:hover) {
           background: #eee;
         }
         option-list option[selected],
         option-list option[selected]:hover,
-        ::slotted(div[selected]),
-        ::slotted(div[selected]:hover) {
+        ::slotted(option[selected]),
+        ::slotted(option[selected]:hover) {
           color: #3777bc;
         }
       </style>

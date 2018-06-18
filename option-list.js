@@ -1,9 +1,17 @@
 (function (document, window) {
 
   if (!window.customElements || !HTMLElement.prototype.attachShadow) {
-    loadScript('https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/1.2.0/webcomponents-sd-ce.js', loadOptionList)
+    loadScript('https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/1.2.0/webcomponents-sd-ce.js', loadComponents)
   } else {
-    loadOptionList();
+    loadComponents();
+  }
+
+  function loadComponents(){
+    if(!window.customElements.get('img-icon')) {
+      loadScript('https://cdn.rawgit.com/Nevraeka/img-icon/master/img-icon.js', loadOptionList);
+    } else {
+      loadOptionList();
+    }
   }
 
   function loadScript(url, callback) {

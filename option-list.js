@@ -28,14 +28,14 @@
       window.customElements.define('option-list',
         class OptionList extends HTMLElement {
 
-          static get observedAttributes() { return ['class', 'style', 'caret', 'max-select']; }
+          static get observedAttributes() { return ['class', 'style', 'caret']; }
 
-          get info() { return Object.freeze({ dependencies: [], name: 'option-list', version: 'v1.1.0' }); }
+          get info() { return Object.freeze({ dependencies: [], name: 'option-list', version: 'v1.2.0' }); }
 
           constructor() {
             super();
             this._root = null;
-            this._state = { maxSelect: 1, selectedIndices: [] };
+            this._state = { selectedIndex: 0 };
           }
 
           connectedCallback() {
@@ -44,43 +44,36 @@
               else { this._root = this; }
             }
             render(this);
-
+           
             Array.from(this.children, (item, indx, arr) => {
-              if(this._state.selectedIndices.length <= this._state.maxSelect) {
-                if (item.getAttribute('selected')) {
-                  this._state.selectedIndices.push(indx);
-                } else {
-                  item.removeAttribute('selected');
-                }
+               
+              if (item.getAttribute('selected')) {
+                return this._state.selectedIndex = indx;
               }
+              return item.removeAttribute('selected');
             });
-            this._root.querySelector('#slot').addEventListener('slotchange', slotChangeHandler.bind(this));
-          }
-
-          disconnectedCallback(){
-            this._root.querySelector('#slot').removeEventListener('slotchange', slotChangeHandler.bind(this));
+           
           }
 
           attributeChangedCallback(name, oldValue, newValue) {
             if (newValue === oldValue) { return };
-            if (name === 'max-select') {
-              const parsedVal = parseInt(newValue, 10);
-              this._state.maxSelect = !!parsedVal ? parsedVal : 1;
-            }
             if (name === 'caret') {
               if(this._root !== null) {
-                this._root.querySelector('.option_list').className = `option_list ${newValue.replace(' ', '-').toLowerCase()}`; }
+                this._root.querySelector('.listbox').className = `listbox  ${newValue.replace(' ', '-').toLowerCase()}`; }
               }          
             }
         });
     }
   }
 
-  function render(elemInstance) {
-    elemInstance._root.innerHTML = `
+  function render(component) {
+    if (window.ShadyCSS) ShadyCSS.styleElement(this);
+    let $template = document.createElement("template");
+    $template.innerHTML = `
       <style>
-        :host,
-        option-list {
+        :host {
+          --img-icon--base-color: rgba(255,255,255,0); 
+          --img-icon--color: #3777bc;
           display: block;
           box-sizing: border-box;
           margin: 0;
@@ -93,46 +86,47 @@
           font-weight: 300;
         }
 
-        .option_list:last-child,
-        ::slotted(option:last-of-type) {
-          margin: 0 0 0 auto;
-        }
-
-        ::slotted(option),
-        option-list > option {
-          -webkit-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-          user-select: none;
-          display: flex;
-          box-sizing: border-box;
-          align-items: center;
-          padding: 8px 16px;
-          background-color: #fff;
-          transition: background-color .2s
-        }
-
-        .option_list {
+        .listbox {
+          position: relative;
+          z-index: 99999;
+          margin: 0;
+          padding: 0;
           overflow: visible;
           box-sizing: border-box;
           box-shadow: 0 2px 4px 0 rgba(0,0,0,.2);
           border-radius: 4px;
           border: 1px solid #e0e0e0;
           width: 100%;
-          position: relative;
-          top: 7px;
         }
 
-        .top-left:before {
-          content: "";
-          border: 7px solid transparent;
-          border-bottom-color: #e0e0e0;
-          position: absolute;
-          left: 25px;
-          top: -14px;
+        ::slotted(li) { 
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          display: flex;
+          box-sizing: border-box;
+          align-items: center;
+          padding: 8px 16px;
+          background-color: #fff;
+          transition: background-color .2s;
+          font-family: 'Roboto', Helvetica, Arial, sans-serif;
+          font-size: 14px;
+          overflow: visible;
+          cursor: pointer;
+          font-weight: 300;
+          width: 100%;   
         }
 
-        .top-left:after {
+       .listbox:before {
+         content: "";
+         border: 7px solid transparent;
+         border-bottom-color: #e0e0e0;
+         position: absolute;
+         left: 25px;
+         top: -14px;
+        }
+        
+        .listbox:after {
           left: 26px;
           top: -12px;
           content: "";
@@ -141,28 +135,34 @@
           position: absolute;
         }
 
-        option-list > option:hover,
-        ::slotted(option:hover) {
+        ::slotted(li:hover) {
           background: #eee;
         }
-        option-list option[selected],
-        option-list option[selected]:hover,
-        ::slotted(option[selected]),
-        ::slotted(option[selected]:hover) {
+
+        ::slotted(li[selected]),
+        ::slotted(li[selected]:hover) {
           color: #3777bc;
         }
       </style>
-      <div class="option_list ${(!!elemInstance.getAttribute('caret') ? elemInstance.getAttribute('caret') : '').replace(' ', '-').toLowerCase()}"> 
-        <slot id="slot"></slot>
-      </div>
+      <ol class="listbox">
+        <slot></slot>
+      </ol>
     `;
-  }
 
-  function slotChangeHandler(evt) {
-    const nodes = evt.target.assignedNodes();
+    if (window.ShadyCSS) ShadyCSS.prepareTemplate($template, 'checkbox-input');
+    component._root.appendChild(document.importNode($template.content, true));
+    
+    const nodes = component._root.querySelector('slot').assignedNodes();
     const elemNodes = Array.from(nodes).filter((nd) => nd.nodeType === 1);
+    
     elemNodes.forEach((elem, indx) => {
+    
+      if(!elem.querySelector('img-icon')) {
+        elem.innerHTML += '<img-icon shape="checkmark" class="img-icon" fill="0" style="margin: 0 0 0 auto;"></img-icon>';
+      }
       const handleClick = (evnt) => {
+        const imgIcon = elem.querySelector('img-icon');
+
         const optionSelectedEvent = new CustomEvent('optionSelected', {
           bubbles: true,
           composable: true,
@@ -175,30 +175,28 @@
           detail: { index: indx, value: (elem.getAttribute('value') || elem.innerHTML) }
         });
 
-        if(this._state.maxSelect === 1) {
-          elemNodes.forEach((optEl) => optEl.removeAttribute('selected'));
-          evnt.target.setAttribute('selected', 'true');
-          this._state.selectedIndices = [indx];
-          this.dispatchEvent(optionSelectedEvent);
-        } else {
-          const index = this._state.selectedIndices.indexOf(indx);
-          if (index === -1) {
-            if (this._state.selectedIndices.length < this._state.maxSelect) {
-              this._state.selectedIndices.push(indx);
-              evnt.target.setAttribute('selected', 'true');
-              this.dispatchEvent(optionSelectedEvent);
-            }
-          } else {
-            evnt.target.removeAttribute('selected');
-            delete this._state.selectedIndices[index];
-            this._state.selectedIndices = this._state.selectedIndices.filter((item) => !!item);
-            this.dispatchEvent(optionDeselectedEvent);
+        elemNodes.forEach((optEl) => {
+          if(optEl !== elem) { 
+            const imgIcn = optEl.querySelector('img-icon');
+            if(imgIcn) { imgIcn.setAttribute('fill', '0'); }
+            optEl.removeAttribute('selected'); 
           }
+        });
+        if(elem.getAttribute('selected')){
+          elem.removeAttribute('selected');
+          if(imgIcon) { imgIcon.setAttribute('fill', '0'); }
+          component._state.selectedIndex = 0;
+          component.dispatchEvent(optionDeselectedEvent);
+        } else {
+          elem.setAttribute('selected', 'true');
+          if(imgIcon) { imgIcon.setAttribute('fill', '100'); }
+          component._state.selectedIndex = indx;
+          component.dispatchEvent(optionSelectedEvent);
         }
       };
-      elem.removeEventListener('click', handleClick.bind(this));
-      elem.addEventListener('click', handleClick.bind(this));
-    }, this);
-  };
+      elem.removeEventListener('click', handleClick.bind(component));
+      elem.addEventListener('click', handleClick.bind(component));
+    }, component);
+  }
 
 })(document, window);

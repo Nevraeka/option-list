@@ -56,9 +56,6 @@
             Array.from(this.children, (item, indx, arr) => {
                
               if (item.getAttribute('selected')) {
-                if(!item.querySelector('img-icon')) {
-                  item.innerHTML += '<img-icon shape="checkmark" class="img-icon" fill="100" style="margin: 0 0 0 auto;"></img-icon>';
-                }
                 return this._state.selectedIndex = indx;
               }
               return item.removeAttribute('selected');
@@ -169,7 +166,7 @@
     elemNodes.forEach((elem, indx) => {
     
       if(!elem.querySelector('img-icon')) {
-        elem.innerHTML += '<img-icon shape="checkmark" class="img-icon" fill="0" style="margin: 0 0 0 auto;"></img-icon>';
+        elem.innerHTML += `<img-icon shape="checkmark" class="img-icon" fill="${elem.getAttribute('selected') === 'true' ? 100 : 0}" style="margin: 0 0 0 auto;"></img-icon>`;
       }
       const handleClick = (evnt) => {
         const imgIcon = elem.querySelector('img-icon');

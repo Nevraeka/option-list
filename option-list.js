@@ -56,6 +56,9 @@
             Array.from(this.children, (item, indx, arr) => {
                
               if (item.getAttribute('selected')) {
+                if(!item.querySelector('img-icon')) {
+                  item.innerHTML += '<img-icon shape="checkmark" class="img-icon" fill="100" style="margin: 0 0 0 auto;"></img-icon>';
+                }
                 return this._state.selectedIndex = indx;
               }
               return item.removeAttribute('selected');

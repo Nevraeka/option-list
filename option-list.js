@@ -76,6 +76,7 @@
 
   function render(component) {
     if (window.ShadyCSS) ShadyCSS.styleElement(this);
+    if(!!component._root) {
     let $template = document.createElement("template");
     $template.innerHTML = `
       <style>
@@ -105,9 +106,10 @@
           border-radius: 4px;
           border: 1px solid #e0e0e0;
           width: 100%;
+          list-style: none;
         }
 
-        ::slotted(li) { 
+        *::slotted(li) { 
           -webkit-user-select: none;
           -moz-user-select: none;
           -ms-user-select: none;
@@ -143,12 +145,12 @@
           position: absolute;
         }
 
-        ::slotted(li:hover) {
+        *::slotted(li:hover) {
           background: #eee;
         }
 
-        ::slotted(li[selected]),
-        ::slotted(li[selected]:hover) {
+        *::slotted(li[selected]),
+        *::slotted(li[selected]:hover) {
           color: #3777bc;
         }
       </style>
@@ -157,7 +159,7 @@
       </ol>
     `;
 
-    if (window.ShadyCSS) ShadyCSS.prepareTemplate($template, 'checkbox-input');
+    if (window.ShadyCSS) ShadyCSS.prepareTemplate($template, 'option-list');
     component._root.appendChild(document.importNode($template.content, true));
     
     const nodes = component._root.querySelector('slot').assignedNodes();
@@ -205,6 +207,7 @@
       elem.removeEventListener('click', handleClick.bind(component));
       elem.addEventListener('click', handleClick.bind(component));
     }, component);
+    }
   }
 
 })(document, window);
